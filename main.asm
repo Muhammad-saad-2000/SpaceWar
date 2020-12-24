@@ -24,11 +24,14 @@ FIRST_PLAYER_ROT_LEFT_BTN         EQU 75
 FIRST_PLAYER_ROT_RIGHT_BTN        EQU 77
 FIRST_PLAYER_INCR_THRUST_BTN      EQU 72 
 FIRST_PLAYER_DECR_THRUST_BTN      EQU 80  
+FIRST_PLAYER_FIRE                 EQU 1CH
+
  
 SECOND_PLAYER_ROT_LEFT_BTN        EQU 1EH
 SECOND_PLAYER_ROT_RIGHT_BTN       EQU 20H
 SECOND_PLAYER_INCR_THRUST_BTN     EQU 11H
 SECOND_PLAYER_DECR_THRUST_BTN     EQU 1FH
+SECOND_PLAYER_FIRE                EQU 39H
 
 first_player_direction   DB 00h
 first_player_thrust      DB 00h 
@@ -38,6 +41,15 @@ second_player_direction  DB 00h
 second_player_thrust     DB 00h
 second_player_X          DW 150
 second_player_Y          DW 100
+
+LAUNCHED_P1              DB 00
+FIRED_P1_POSX            DW 000
+FIRED_P1_POSY            DW 000
+FIRED_P1_DIREC           DB 00
+LAUNCHED_P2              DB 00
+FIRED_P2_POSX            DW 000
+FIRED_P2_POSY            DW 000
+FIRED_P2_DIREC           DB 00
 ;***************************************************************************************************************************************************************
 .CODE
 INCLUDE OPLogic.INC
@@ -53,28 +65,35 @@ int 10h
 drawingLoop:
 	call TAKE_INPUT
 	call UPDATE_PLAYERS
+    
+
     mov si,1
     call drawBackground ;drawing the background
 	mov si,first_player_X;position x choise p1
 	mov di,first_player_Y;position y choise p1
 	mov cl,first_player_direction;rotation choice p1
     mov bl,0;color choise
-	call drawShip;drawing the ship
+	call drawShip;drawing the p1 ship
     mov si,second_player_X;position x choise p2
 	mov di,second_player_Y;position y choise p2
 	mov cl,second_player_direction;rotation choice p2
     mov bl,1;color choise
-	call drawShip;drawing the ship
-	mov cx, 0;set speed of rendering
-	mov dx, 0a120h
-	mov ah, 86h
-	int 15h
+	call drawShip;drawing the p2 ship
 
-	mov ax,0600h;clear old screen
-	mov bh,00    
-	mov cx,0     
-	mov dx,184fh
-	int 10h
+    FIRE_P2
+    FIRE_P1
+    
+	REND:
+        mov cx, 0;set speed of rendering
+        mov dx, 0a120h
+        mov ah, 86h
+        int 15h
+
+        mov ax,0600h;clear old screen
+        mov bh,00    
+        mov cx,0     
+        mov dx,184fh
+        int 10h
 jmp drawingLoop
 
 hlt
@@ -92,28 +111,44 @@ TAKE_INPUT       PROC NEAR  ;take the inputs from users
     INT 16H
     ;And compare pressed key against known keys 
     ;P1              
-    KEY1:   CMP AH, FIRST_PLAYER_ROT_LEFT_BTN
+    KEY1:
+    CMP AH, FIRST_PLAYER_ROT_LEFT_BTN
     JNZ KEY2  
         ROTATE_PLAYER1_ANTICLOCK
     JMP IS_KEY_PRESSED  
                                          
-    KEY2:   CMP AH, FIRST_PLAYER_ROT_RIGHT_BTN    
+    KEY2:  
+     CMP AH, FIRST_PLAYER_ROT_RIGHT_BTN    
     JNZ KEY3
         ROTATE_PLAYER1_CLOCK 
     JMP IS_KEY_PRESSED  
               
-    KEY3:   CMP AH, FIRST_PLAYER_INCR_THRUST_BTN
+    KEY3: 
+      CMP AH, FIRST_PLAYER_INCR_THRUST_BTN
     JNZ KEY4
         INCR_PLAYER1_THRUST
     JMP IS_KEY_PRESSED  
                              
-    KEY4:   CMP AH, FIRST_PLAYER_DECR_THRUST_BTN
-    JNZ KEY5    
+    KEY4: 
+      CMP AH, FIRST_PLAYER_DECR_THRUST_BTN
+    JNZ KEY9
         DECR_PLAYER1_THRUST
+    JMP IS_KEY_PRESSED
+
+    KEY9:   CMP AH, FIRST_PLAYER_FIRE
+    JNZ key5   
+        MOV LAUNCHED_P1,01
+        MOV SI,first_player_X
+        MOV FIRED_P1_POSX,SI
+        MOV DI,first_player_Y
+        MOV FIRED_P1_POSY,DI
+        MOV CL,first_player_direction
+        MOV FIRED_P1_DIREC,CL
     JMP IS_KEY_PRESSED
              
     ;P2   
-    KEY5:   CMP AH, SECOND_PLAYER_ROT_LEFT_BTN   
+    KEY5:   
+    CMP AH, SECOND_PLAYER_ROT_LEFT_BTN   
     JNZ KEY6
         ROTATE_PLAYER2_ANTICLOCK        
     JMP IS_KEY_PRESSED   
@@ -129,9 +164,21 @@ TAKE_INPUT       PROC NEAR  ;take the inputs from users
     JMP IS_KEY_PRESSED 
                                 
     KEY8:   CMP AH, SECOND_PLAYER_DECR_THRUST_BTN
-    JNZ IS_KEY_PRESSED   
+    JNZ KEY10   
         DECR_PLAYER2_THRUST
     JMP IS_KEY_PRESSED
+
+    KEY10:   CMP AH, SECOND_PLAYER_FIRE
+    JNZ IS_KEY_PRESSED   
+        MOV LAUNCHED_P2,01
+        MOV SI,second_player_X
+        MOV FIRED_P2_POSX,SI
+        MOV DI,second_player_Y
+        MOV FIRED_P2_POSY,DI
+        MOV CL,second_player_direction
+        MOV FIRED_P2_DIREC,CL
+    JMP IS_KEY_PRESSED
+  
     
     TERMINATE:   RET
 TAKE_INPUT       ENDP
@@ -230,6 +277,8 @@ UPDATE_PLAYERS   PROC NEAR  ;updated the thrust and the attitude values to updat
     
     OVER: RET
 UPDATE_PLAYERS   ENDP
+
+
 
 
 end main
