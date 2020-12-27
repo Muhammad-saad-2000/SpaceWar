@@ -49,7 +49,9 @@ endDrawShip:
 RET
 drawShip endp
 
-drawFire proc;offset: si->x,di->y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
+drawFire proc;offset: si->offset x,di->offset y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
+mov si,[si]
+mov di,[di]
 cmp cl,0
 jnz notAngelFire0
 call drawFire0
