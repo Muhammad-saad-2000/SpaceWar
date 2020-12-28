@@ -49,7 +49,6 @@ FireYArrP1               DW 3 dup(0)
 FireIArrP2               DB 3 dup(2 dup(1));appear 1->no Fire 2->there is fire, dir
 FireXArrP2               DW 3 dup(0)
 FireYArrP2               DW 3 dup(0)
-
 ;***************************************************************************************************************************************************************
 Player1_Score            DW 00
 Player2_Score            DW 00
@@ -62,9 +61,9 @@ Score_Word               DB 'Score : $'
 Lives_Word               DB 'Lives : $'
 
 temp_var                 DB 0
-temp_cx                  DW 0
 
 Score_Num_char           DB 10 dup('$')
+
 ;***************************************************************************************************************************************************************
 
 .CODE
@@ -95,7 +94,7 @@ drawingLoop:
 	mov cl,first_player_direction;rotation choice p1
     mov bl,0;color choise
 	call drawShip;drawing the p1 ship
-  
+
     call DarwFIRE_P1
     mov si,second_player_X;position x choise p2
 	mov di,second_player_Y;position y choise p2
