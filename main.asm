@@ -24,36 +24,53 @@ FIRST_PLAYER_ROT_LEFT_BTN         EQU 75
 FIRST_PLAYER_ROT_RIGHT_BTN        EQU 77
 FIRST_PLAYER_INCR_THRUST_BTN      EQU 72 
 FIRST_PLAYER_DECR_THRUST_BTN      EQU 80  
-FIRST_PLAYER_FIRE                 EQU 1CH
+FIRST_PLAYER_FIRE                 EQU 25h;k
 
  
 SECOND_PLAYER_ROT_LEFT_BTN        EQU 1EH
 SECOND_PLAYER_ROT_RIGHT_BTN       EQU 20H
 SECOND_PLAYER_INCR_THRUST_BTN     EQU 11H
 SECOND_PLAYER_DECR_THRUST_BTN     EQU 1FH
-SECOND_PLAYER_FIRE                EQU 39H
+SECOND_PLAYER_FIRE                EQU 39H;space
 
 first_player_direction   DB 00h
 first_player_thrust      DB 00h 
 first_player_X           DW 150
-first_player_Y           DW 000
+first_player_Y           DW 20
 second_player_direction  DB 00h
 second_player_thrust     DB 00h
 second_player_X          DW 150
-second_player_Y          DW 100
+second_player_Y          DW 180
 
-LAUNCHED_P1              DB 00
-FIRED_P1_POSX            DW 000
-FIRED_P1_POSY            DW 000
-FIRED_P1_DIREC           DB 00
-LAUNCHED_P2              DB 00
-FIRED_P2_POSX            DW 000
-FIRED_P2_POSY            DW 000
-FIRED_P2_DIREC           DB 00
+FireIArrP1               DB 3 dup(2 dup(1));appear 1->no Fire 2->there is fire, dir
+FireXArrP1               DW 3 dup(0)
+FireYArrP1               DW 3 dup(0)
+
+FireIArrP2               DB 3 dup(2 dup(1));appear 1->no Fire 2->there is fire, dir
+FireXArrP2               DW 3 dup(0)
+FireYArrP2               DW 3 dup(0)
 ;***************************************************************************************************************************************************************
+Player1_Score            DW 00
+Player2_Score            DW 00
+
+Player1_Hearts           DW 00
+Player2_Hearts           DW 00
+;***************************************************************************************************************************************************************
+Game_Over_Mess           DB 'Game Over!',10,13,09,32,32,' Press [y] to retart.',10,13,09,32,32,32,'Press other key to quit.$$'
+Score_Word               DB 'Score : $'
+Lives_Word               DB 'Lives : $'
+
+temp_var                 DB 0
+temp_cx                  DW 0
+
+Score_Num_char           DB 10 dup('$')
+
+;***************************************************************************************************************************************************************
+
 .CODE
 INCLUDE OPLogic.INC
 INCLUDE models.INC
+INCLUDE Score.INC
 main proc far
 mov ax,@data
 mov ds,ax
@@ -62,38 +79,41 @@ mov ah,0;set screen 320width*200height
 mov al,13h 
 int 10h
 
+Restart:
+    Intialize_Lives_scores
 drawingLoop:
 	call TAKE_INPUT
 	call UPDATE_PLAYERS
-    
-
+    call drawScore
     mov si,1
     call drawBackground ;drawing the background
-	mov si,first_player_X;position x choise p1
+	
+    Game_Over
+
+    mov si,first_player_X;position x choise p1
 	mov di,first_player_Y;position y choise p1
 	mov cl,first_player_direction;rotation choice p1
     mov bl,0;color choise
 	call drawShip;drawing the p1 ship
+
+    call DarwFIRE_P1
     mov si,second_player_X;position x choise p2
 	mov di,second_player_Y;position y choise p2
 	mov cl,second_player_direction;rotation choice p2
     mov bl,1;color choise
 	call drawShip;drawing the p2 ship
+    call DarwFIRE_P2
 
-    FIRE_P2
-    FIRE_P1
     
-	REND:
-        mov cx, 0;set speed of rendering
-        mov dx, 0a120h
-        mov ah, 86h
-        int 15h
-
-        mov ax,0600h;clear old screen
-        mov bh,00    
-        mov cx,0     
-        mov dx,184fh
-        int 10h
+    mov cx, 0;set speed of rendering
+    mov dx, 0a120h
+    mov ah, 86h
+    int 15h
+    mov ax,0600h;clear old screen
+    mov bh,00    
+    mov cx,0     
+    mov dx,184fh
+    int 10h
 jmp drawingLoop
 
 hlt
@@ -135,15 +155,30 @@ TAKE_INPUT       PROC NEAR  ;take the inputs from users
         DECR_PLAYER1_THRUST
     JMP IS_KEY_PRESSED
 
-    KEY9:   CMP AH, FIRST_PLAYER_FIRE
-    JNZ key5   
-        MOV LAUNCHED_P1,01
-        MOV SI,first_player_X
-        MOV FIRED_P1_POSX,SI
-        MOV DI,first_player_Y
-        MOV FIRED_P1_POSY,DI
-        MOV CL,first_player_direction
-        MOV FIRED_P1_DIREC,CL
+    KEY9:
+        CMP AH, FIRST_PLAYER_FIRE
+        JNZ key5
+        mov si,0
+        mov bx,offset FireIArrP1
+        LoopCheckFireArrP1:
+        cmp bx, offset FireXArrP1
+        JZ IS_KEY_PRESSED
+        mov al,[bx]
+        CMP al,1
+        JZ foundEmptyFireP1
+        add bx ,2
+        add si ,2
+        JMP LoopCheckFireArrP1
+        foundEmptyFireP1:
+        mov [bx],2
+        mov ah,first_player_direction
+        MOV [bx+1],ah
+        mov bx,offset FireXArrP1
+        mov ax,first_player_X
+        MOV [bx+si],ax
+        mov bx,offset FireYArrP1
+        mov ax,first_player_Y
+        MOV [bx+si],ax
     JMP IS_KEY_PRESSED
              
     ;P2   
@@ -168,15 +203,30 @@ TAKE_INPUT       PROC NEAR  ;take the inputs from users
         DECR_PLAYER2_THRUST
     JMP IS_KEY_PRESSED
 
-    KEY10:   CMP AH, SECOND_PLAYER_FIRE
-    JNZ IS_KEY_PRESSED   
-        MOV LAUNCHED_P2,01
-        MOV SI,second_player_X
-        MOV FIRED_P2_POSX,SI
-        MOV DI,second_player_Y
-        MOV FIRED_P2_POSY,DI
-        MOV CL,second_player_direction
-        MOV FIRED_P2_DIREC,CL
+    KEY10:
+        CMP AH, SECOND_PLAYER_FIRE
+        JNZ IS_KEY_PRESSED
+        mov si,0
+        mov bx,offset FireIArrP2
+        LoopCheckFireArrP2:
+        cmp bx, offset FireXArrP2
+        JZ IS_KEY_PRESSED
+        mov al,[bx]
+        CMP al,1
+        JZ foundEmptyFireP2
+        add bx ,2
+        add si ,2
+        JMP LoopCheckFireArrP2
+        foundEmptyFireP2:
+        mov [bx],2
+        mov ah,second_player_direction
+        MOV [bx+1],ah
+        mov bx,offset FireXArrP2
+        mov ax,second_player_X
+        MOV [bx+si],ax
+        mov bx,offset FireYArrP2
+        mov ax,second_player_Y
+        MOV [bx+si],ax
     JMP IS_KEY_PRESSED
   
     
@@ -219,14 +269,14 @@ UPDATE_PLAYERS   PROC NEAR  ;updated the thrust and the attitude values to updat
         SUB first_player_Y, AX 
     JMP CHECK1_YBOUNDS_UNDER
     
-    CHECK1_YBOUNDS_OVER:    CMP first_player_Y, 176
+    CHECK1_YBOUNDS_OVER:    CMP first_player_Y, 160
     JLE BEGIN_P2X
-    MOV first_player_Y, 175
+    MOV first_player_Y, 160
     JMP BEGIN_P2X
                          
-    CHECK1_YBOUNDS_UNDER:   CMP first_player_Y, 0
+    CHECK1_YBOUNDS_UNDER:   CMP first_player_Y, 20
     JGE BEGIN_P2X
-    MOV first_player_Y, 0 
+    MOV first_player_Y, 20
     JMP BEGIN_P2X
                         
     BEGIN_P2X:
@@ -265,20 +315,253 @@ UPDATE_PLAYERS   PROC NEAR  ;updated the thrust and the attitude values to updat
         SUB second_player_Y, BX 
     JMP CHECK2_YBOUNDS_UNDER
     
-    CHECK2_YBOUNDS_OVER:    CMP second_player_Y, 176
+    CHECK2_YBOUNDS_OVER:    CMP second_player_Y, 160
     JLE OVER
-    MOV second_player_Y, 175
+    MOV second_player_Y, 160
     JMP OVER
                          
-    CHECK2_YBOUNDS_UNDER:   CMP second_player_Y, 0
+    CHECK2_YBOUNDS_UNDER:   CMP second_player_Y, 20
     JGE OVER
-    MOV second_player_Y, 0 
+    MOV second_player_Y, 20 
     JMP OVER
     
-    OVER: RET
+    OVER: 
+    call Check_Collision
+    call Check_Fire_Damage_P1
+    call Check_Fire_Damage_P2
+    RET
 UPDATE_PLAYERS   ENDP
 
+DarwFIRE_P1 proc
+	mov bx,offset FireIArrP1
+    mov si,offset FireXArrP1
+    mov di,offset FireYArrP1
+	LoopDarwFireArrP1:
+	mov al,[bx]
+    CMP al,1
+	JZ NoFireToDrawFireP1
+	mov cl,[bx+1]
 
+    push si
+    push di
+	call drawfire
+    pop di
+    pop si
 
+    mov cl,[bx+1]
+	cmp cl,0
+	jnz Fire1A0
+	sub [di],12
+	mov ax,[di]
+    cmp ax,15
+	jg	NoFireToDrawFireP1
+	mov [bx],1
+
+	Fire1A0:
+	cmp cl,1
+	jnz Fire1A45
+	sub [si],12
+	sub [di],12
+	mov ax,[di]
+    cmp ax,15
+	jng	deleteFire1A45
+	mov ax,[si]
+    cmp ax,1
+	jg	NoFireToDrawFireP1
+	deleteFire1A45:
+		mov [bx],1
+
+	Fire1A45:
+	cmp cl,2
+	jnz Fire1A90
+	sub [si],12
+	mov ax,[si]
+    cmp ax,1
+	jg	NoFireToDrawFireP1
+	mov [bx],1
+
+	Fire1A90:
+	cmp cl,3
+	jnz Fire1A135
+	sub [si],12
+	add [di],12
+	mov ax,[di]
+    cmp ax,165
+	jnl	deleteFire1A135
+	mov ax,[si]
+    cmp ax,1
+	jg	NoFireToDrawFireP1
+	deleteFire1A135:
+		mov [bx],1
+
+	Fire1A135:
+	cmp cl,4
+	jnz Fire1A180
+	add [di],12
+	mov ax,[di]
+    cmp ax,165
+	jl	NoFireToDrawFireP1
+	mov [bx],1
+
+	Fire1A180:
+	cmp cl,0fdh
+	jnz Fire1A225
+	add [si],12
+	add [di],12
+	mov ax,[di]
+    cmp ax,165
+	jnl	deleteFire1A225
+	mov ax,[si]
+    cmp ax,305
+	jl	NoFireToDrawFireP1
+	deleteFire1A225:
+		mov [bx],1
+
+	Fire1A225:
+	cmp cl,0feh
+	jnz Fire1A270
+	add [si],12
+	mov ax,[si]
+    cmp ax,305
+	jl	NoFireToDrawFireP1
+	mov [bx],1
+
+	Fire1A270:
+	cmp cl,0ffh
+	add [si],12
+	sub [di],12
+	mov ax,[di]
+    cmp ax,15
+	jng	deleteFire1A270
+	mov ax,[si]
+    cmp ax,305
+	jl	NoFireToDrawFireP1
+	deleteFire1A270:
+		mov [bx],1
+
+	NoFireToDrawFireP1:
+	add bx,2
+	add si,2
+	add di,2
+    cmp bx, offset FireXArrP1
+	JNZ LoopDarwFireArrP1
+	RET
+DarwFIRE_P1 endp
+
+DarwFIRE_P2 proc
+	mov bx,offset FireIArrP2
+    mov si,offset FireXArrP2
+    mov di,offset FireYArrP2
+	LoopDarwFireArrP2:
+    mov al,[bx]
+	cmp al,1
+	JZ NoFireToDrawFireP2
+	mov cl,[bx+1]
+
+    push si
+    push di
+	call drawfire
+    pop di
+    pop si
+
+	mov cl,[bx+1]
+	cmp cl,0
+	jnz Fire2A0
+	sub [di],12
+    mov ax,[di]
+	cmp ax,15
+	jg	NoFireToDrawFireP2
+	mov [bx],1
+
+	Fire2A0:
+	cmp cl,1
+	jnz Fire2A45
+	sub [si],12
+	sub [di],12
+	mov ax,[di]
+    cmp ax,15
+	jng	deleteFire2A45
+	mov ax,[si]
+    cmp ax,1
+	jg	NoFireToDrawFireP2
+	deleteFire2A45:
+		mov [bx],1
+
+	Fire2A45:
+	cmp cl,2
+	jnz Fire2A90
+	sub [si],12
+	mov ax,[si]
+    cmp ax,1
+	jg	NoFireToDrawFireP2
+	mov [bx],1
+
+	Fire2A90:
+	cmp cl,3
+	jnz Fire2A135
+	sub [si],12
+	add [di],12
+	mov ax,[di]
+    cmp ax,165
+	jnl	deleteFire2A135
+	mov ax,[si]
+    cmp ax,1
+	jg	NoFireToDrawFireP2
+	deleteFire2A135:
+		mov [bx],1
+
+	Fire2A135:
+	cmp cl,4
+	jnz Fire2A180
+	add [di],12
+	mov ax,[di]
+    cmp ax,165
+	jl	NoFireToDrawFireP2
+	mov [bx],1
+
+	Fire2A180:
+	cmp cl,0fdh
+	jnz Fire2A225
+	add [si],12
+	add [di],12
+	mov ax,[di]
+    cmp ax,165
+	jnl	deleteFire2A225
+	mov ax,[si]
+    cmp ax,305
+	jl	NoFireToDrawFireP2
+	deleteFire2A225:
+		mov [bx],1
+
+	Fire2A225:
+	cmp cl,0feh
+	jnz Fire2A270
+	add [si],12
+	mov ax,[si]
+    cmp ax,305
+	jl	NoFireToDrawFireP2
+	mov [bx],1
+
+	Fire2A270:
+	cmp cl,0ffh
+	add [si],12
+	sub [di],12
+	mov ax,[di]
+    cmp ax,15
+	jng	deleteFire2A270
+	mov ax,[si]
+    cmp ax,305
+	jl	NoFireToDrawFireP2
+	deleteFire2A270:
+		mov [bx],1
+
+	NoFireToDrawFireP2:
+	add bx,2
+	add si,2
+	add di,2
+    cmp bx, offset FireXArrP2
+	JNZ LoopDarwFireArrP2
+	RET
+DarwFIRE_P2 endp
 
 end main
