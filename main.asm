@@ -36,11 +36,11 @@ SECOND_PLAYER_FIRE                EQU 39H;space
 first_player_direction   DB 00h
 first_player_thrust      DB 00h 
 first_player_X           DW 150
-first_player_Y           DW 000
+first_player_Y           DW 20
 second_player_direction  DB 00h
 second_player_thrust     DB 00h
 second_player_X          DW 150
-second_player_Y          DW 100
+second_player_Y          DW 180
 
 FireIArrP1               DB 3 dup(2 dup(1));appear 1->no Fire 2->there is fire, dir
 FireXArrP1               DW 3 dup(0)
@@ -49,10 +49,28 @@ FireYArrP1               DW 3 dup(0)
 FireIArrP2               DB 3 dup(2 dup(1));appear 1->no Fire 2->there is fire, dir
 FireXArrP2               DW 3 dup(0)
 FireYArrP2               DW 3 dup(0)
+
 ;***************************************************************************************************************************************************************
+Player1_Score            DW 00
+Player2_Score            DW 00
+
+Player1_Hearts           DW 00
+Player2_Hearts           DW 00
+;***************************************************************************************************************************************************************
+Game_Over_Mess           DB 'Game Over!',10,13,09,32,32,' Press [y] to retart.',10,13,09,32,32,32,'Press other key to quit.$$'
+Score_Word               DB 'Score : $'
+Lives_Word               DB 'Lives : $'
+
+temp_var                 DB 0
+temp_cx                  DW 0
+
+Score_Num_char           DB 10 dup('$')
+;***************************************************************************************************************************************************************
+
 .CODE
 INCLUDE OPLogic.INC
 INCLUDE models.INC
+INCLUDE Score.INC
 main proc far
 mov ax,@data
 mov ds,ax
@@ -61,18 +79,23 @@ mov ah,0;set screen 320width*200height
 mov al,13h 
 int 10h
 
+Restart:
+    Intialize_Lives_scores
 drawingLoop:
 	call TAKE_INPUT
 	call UPDATE_PLAYERS
-    
-
+    call drawScore
     mov si,1
     call drawBackground ;drawing the background
-	mov si,first_player_X;position x choise p1
+	
+    Game_Over
+
+    mov si,first_player_X;position x choise p1
 	mov di,first_player_Y;position y choise p1
 	mov cl,first_player_direction;rotation choice p1
     mov bl,0;color choise
 	call drawShip;drawing the p1 ship
+  
     call DarwFIRE_P1
     mov si,second_player_X;position x choise p2
 	mov di,second_player_Y;position y choise p2
@@ -246,14 +269,14 @@ UPDATE_PLAYERS   PROC NEAR  ;updated the thrust and the attitude values to updat
         SUB first_player_Y, AX 
     JMP CHECK1_YBOUNDS_UNDER
     
-    CHECK1_YBOUNDS_OVER:    CMP first_player_Y, 176
+    CHECK1_YBOUNDS_OVER:    CMP first_player_Y, 160
     JLE BEGIN_P2X
-    MOV first_player_Y, 175
+    MOV first_player_Y, 160
     JMP BEGIN_P2X
                          
-    CHECK1_YBOUNDS_UNDER:   CMP first_player_Y, 0
+    CHECK1_YBOUNDS_UNDER:   CMP first_player_Y, 20
     JGE BEGIN_P2X
-    MOV first_player_Y, 0 
+    MOV first_player_Y, 20
     JMP BEGIN_P2X
                         
     BEGIN_P2X:
@@ -292,17 +315,21 @@ UPDATE_PLAYERS   PROC NEAR  ;updated the thrust and the attitude values to updat
         SUB second_player_Y, BX 
     JMP CHECK2_YBOUNDS_UNDER
     
-    CHECK2_YBOUNDS_OVER:    CMP second_player_Y, 176
+    CHECK2_YBOUNDS_OVER:    CMP second_player_Y, 160
     JLE OVER
-    MOV second_player_Y, 175
+    MOV second_player_Y, 160
     JMP OVER
                          
-    CHECK2_YBOUNDS_UNDER:   CMP second_player_Y, 0
+    CHECK2_YBOUNDS_UNDER:   CMP second_player_Y, 20
     JGE OVER
-    MOV second_player_Y, 0 
+    MOV second_player_Y, 20 
     JMP OVER
     
-    OVER: RET
+    OVER: 
+    call Check_Collision
+    call Check_Fire_Damage_P1
+    call Check_Fire_Damage_P2
+    RET
 UPDATE_PLAYERS   ENDP
 
 DarwFIRE_P1 proc
@@ -326,7 +353,7 @@ DarwFIRE_P1 proc
 	jnz Fire1A0
 	sub [di],12
 	mov ax,[di]
-    cmp ax,20
+    cmp ax,15
 	jg	NoFireToDrawFireP1
 	mov [bx],1
 
@@ -336,7 +363,7 @@ DarwFIRE_P1 proc
 	sub [si],12
 	sub [di],12
 	mov ax,[di]
-    cmp ax,20
+    cmp ax,15
 	jng	deleteFire1A45
 	mov ax,[si]
     cmp ax,1
@@ -404,7 +431,7 @@ DarwFIRE_P1 proc
 	add [si],12
 	sub [di],12
 	mov ax,[di]
-    cmp ax,20
+    cmp ax,15
 	jng	deleteFire1A270
 	mov ax,[si]
     cmp ax,305
@@ -442,7 +469,7 @@ DarwFIRE_P2 proc
 	jnz Fire2A0
 	sub [di],12
     mov ax,[di]
-	cmp ax,20
+	cmp ax,15
 	jg	NoFireToDrawFireP2
 	mov [bx],1
 
@@ -452,7 +479,7 @@ DarwFIRE_P2 proc
 	sub [si],12
 	sub [di],12
 	mov ax,[di]
-    cmp ax,20
+    cmp ax,15
 	jng	deleteFire2A45
 	mov ax,[si]
     cmp ax,1
@@ -520,7 +547,7 @@ DarwFIRE_P2 proc
 	add [si],12
 	sub [di],12
 	mov ax,[di]
-    cmp ax,20
+    cmp ax,15
 	jng	deleteFire2A270
 	mov ax,[si]
     cmp ax,305
