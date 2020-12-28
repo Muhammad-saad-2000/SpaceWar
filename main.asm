@@ -61,7 +61,6 @@ Score_Word               DB 'Score : $'
 Lives_Word               DB 'Lives : $'
 
 temp_var                 DB 0
-temp_cx                  DW 0
 
 Score_Num_char           DB 10 dup('$')
 

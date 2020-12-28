@@ -272,7 +272,15 @@ Printnum PROC
 ;       mov Rev_Score_Num_char,0
 ;       mov si, offset Rev_Score_Num_char
 ;       ;initilize count 
-      mov Score_Num_char,'0'
+      mov si, offset Score_Num_char
+      mov [si],'$'
+      inc si
+      mov [si],'$'
+      inc si
+      mov [si],'$'
+      inc si
+      mov [si],'$'
+
       mov si, offset Score_Num_char
       
       mov cx,0 
@@ -298,7 +306,6 @@ Printnum PROC
         xor dx,dx 
         jmp label1 
     print1: 
-        add temp_cx,cx
         ;check if count  
         ;is greater than zero 
 	cmp cx,0 
@@ -318,18 +325,16 @@ Printnum PROC
 	inc SI         
         ;decrease the count 
         dec cx 
-        jmp print1
+        cmp cx,0 
+        je Ter
+        
+	jmp print1
 
 
 exit:  
-	add cx,temp_cx
-        mov dl,'$'
-	;sub cx,0
-	;je notzero
-        ;inc SI
-        notzero:
+	mov dl,'0'
 	mov [SI],dl
- 
+ Ter:
      
 ret
 Printnum  ENDP 
@@ -461,9 +466,7 @@ Check_Fire_Damage_P2	Proc
 	add SI,2
 	add DI,2
 	jmp Exists2
-
-
-Terminate2:
+	Terminate2:
 
 ret
 Check_Fire_Damage_P2 ENDP
