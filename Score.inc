@@ -346,29 +346,53 @@ Check_Fire_Damage_P1	Proc
 	cmp bx,offset FireXArrP1
 	jz Terminate1
 
-	cmp [bx],1
-	jz iterate
+	mov al,[bx]
+	cmp al,2
+	jnz iterate
 
 			mov   cx,second_player_X
-			sub   cx,[SI]
-	                cmp   cx,7
-	                ja    iterate
+			mov   ax,[SI]
+			sub   cx,ax
+			jc    Wrap_P1_1
+	        	cmp   cx,20
+			jng   noSwapP1_1
+	                jg    iterate
+			
+		Wrap_P1_1:
+			add   cx,ax
+			sub   ax,cx
+			cmp   ax,20   
+			jng   noSwapP1_1
+	                jg    iterate
+
+		noSwapP1_1:	
 	                mov   cx,second_player_Y
-	                sub   cx,[DI]
-	                cmp   cx,12
-	                ja    iterate
-	                
+	                mov   ax,[DI]
+			sub   cx,ax
+	                jc    Wrap_P1_2
+	        	cmp   cx,30
+			jng   noSwapP1_2
+	                jg    iterate
+			
+		Wrap_P1_2:
+			add   cx,ax
+			sub   ax,cx
+			cmp   ax,30   
+			jng   noSwapP1_2
+	                jg    iterate
+
+		noSwapP1_2:
    	                sub   Player2_Hearts,10
 			add   Player1_Score,10
-	                cmp   Player2_Hearts,0
+	                mov   [bx],1
+			cmp   Player2_Hearts,0
 			jnz   iterate 
 	                jmp   Terminate1
 
 	iterate: 
-	inc bx
-	inc bx
-	inc SI
-	inc DI
+	add bx,2
+	add SI,2
+	add DI,2
 	jmp Exists
 
 	Terminate1:
@@ -376,8 +400,10 @@ Check_Fire_Damage_P1	Proc
 ret
 Check_Fire_Damage_P1 ENDP
 
-Check_Fire_Damage_P2	Proc
 
+
+
+Check_Fire_Damage_P2	Proc
 
 	mov bx,offset FireIArrP2
 	mov SI,offset FireXArrP2
@@ -385,35 +411,59 @@ Check_Fire_Damage_P2	Proc
 
 	Exists2:
 	cmp bx,offset FireXArrP2
-	jz Terminate12
+	jz Terminate2
 
-	cmp [bx],1
-	jz iterate2
+	mov al,[bx]
+	cmp al,2
+	jnz iterate2
 
 			mov   cx,first_player_X
-			sub   cx,[SI]
-	                cmp   cx,10
-			ja    iterate2
+			mov   ax,[SI]
+			sub   cx,ax
+	                jc    Wrap_P2_1
+	        	cmp   cx,20
+			jng   noSwapP2_1
+	                jg    iterate2
+			
+		Wrap_P2_1:
+			add   cx,ax
+			sub   ax,cx
+			cmp   ax,20   
+			jng   noSwapP2_1
+	                jg    iterate2
+
+		noSwapP2_1:	
 	                mov   cx,first_player_Y
-	                sub   cx,[DI]
-	                cmp   cx,12
-	                ja    iterate2
-	                
+	                mov   ax,[DI]
+			sub   cx,ax
+			jc    Wrap_P2_2
+	        	cmp   cx,30
+			jng   noSwapP2_2
+	                jg    iterate2
+
+	        Wrap_P2_2:
+			add   cx,ax
+			sub   ax,cx
+			cmp   ax,30   
+			jng   noSwapP2_2
+	                jg    iterate2
+
+		noSwapP2_2:
    	                sub   Player1_Hearts,10
 			add   Player2_Score,10
+	               	mov   [bx],1
 	              	cmp   Player1_Hearts,0
 			jnz   iterate2 
-	                jmp   Terminate12
+	                jmp   Terminate2
 
 	iterate2: 
-	inc bx
-	inc bx
-	inc SI
-	inc DI
+	add bx,2
+	add SI,2
+	add DI,2
 	jmp Exists2
 
 
-Terminate12:
+Terminate2:
 
 ret
 Check_Fire_Damage_P2 ENDP
