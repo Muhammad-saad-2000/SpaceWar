@@ -41,6 +41,13 @@ Game_Over Macro
 	;;The user Pressed y
 	          cmp   AH,15h
 	          jz    Restart
+		  
+		  mov	AH,06H
+		  mov	AL,00H
+		  mov 	BH,07H
+		  mov 	cx,0000H
+		  mov	dx,184FH
+		  int 	10h	
 	;;The user choosed to end
 	          mov   ah,04ch
 	          int   21h
@@ -244,7 +251,12 @@ Check_Collision Proc
 	                ja    No2
 	                
         Yes:            sub   Player1_Hearts,100
-	                sub   Player2_Hearts,100
+			jnc   Pos1
+			mov   Player1_Hearts,00
+	Pos1:           sub   Player2_Hearts,100
+			jnc   Pos2
+			mov   Player2_Hearts,00
+	Pos2:
 	                mov   cx, 0                      	;set speed of rendering
 	                mov   dx, 0a120h
 	                mov   ah, 86h
@@ -261,8 +273,8 @@ Check_Collision Proc
 	                mov   second_player_thrust, 00h
 
 ;ENDM
-        
-	No2:      ret      
+			No2:
+	      ret      
 Check_Collision ENDP 
 
 
