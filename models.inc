@@ -1,19 +1,19 @@
-drawShip proc;color: bl,offset: si->x,di->y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
-cmp cl,0
+drawShip proc ;color: bl,positions: si->x,di->y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
+cmp cl,0      
 jnz notAngel0
-call drawShip0
+call drawShip0 ;draws a ship of 0 degree
 RET
 
 notAngel0:
 cmp cl,1
 jnz notAngel45
-call drawShip45
+call drawShip45 ;draws a ship of 45 degree
 RET
 
 notAngel45:
 cmp cl,2
 jnz notAngel90
-call drawShip90
+call drawShip90 ;draws a ship of 90 degree and so on
 RET
 
 notAngel90:
@@ -49,7 +49,7 @@ endDrawShip:
 RET
 drawShip endp
 
-drawFire proc;offset: si->offset x,di->offset y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
+drawFire proc ;positions: si->location of the varibles that stores the position x,di->location of the varibles that stores the position y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
 mov si,[si]
 mov di,[di]
 cmp cl,0
@@ -101,6 +101,11 @@ call drawFire315
 endDrawFire:
 RET
 drawFire endp
+
+;for drawing we used a technique that we invented that works upon extracting the pixels data from an image
+;using python script we devloped and convert it to asssemply procedure that draws all the pixels where we want
+;all the bellow procedure follows this architecture(take a position and constuct the image in that position)
+;all is constructed from the script
 
 drawShip0 proc
 mov ah,0ch
