@@ -222,6 +222,7 @@ ENDD:
 	
 	
 	
+P1_NAME:
 	mov ax, 0600h
 	mov bh, 00
 	mov cx, 0
@@ -246,7 +247,22 @@ ENDD:
 	int 10h
 	GetInput First_Player_Name
 	
+
+	cmp First_Player_Name [2],65
+	jl P1_NAME
+
+	cmp First_Player_Name [2],90
+	jle p2_name
+
+	cmp First_Player_Name[2],97
+	jl P1_NAME
+
+	cmp First_Player_Name[2],122
+	jg P1_NAME
+
+
 	
+	p2_name:
 	mov ax, 0600h
 	mov bh, 00
 	mov cx, 0
@@ -270,6 +286,21 @@ ENDD:
 	mov dx, 0c80H
 	int 10h
 	GetInput Second_Player_Name
+
+	cmp Second_Player_Name [2],65
+	jl P2_NAME
+
+	cmp Second_Player_Name [2],90
+	jle ex
+
+	cmp Second_Player_Name[2],97
+	jl ex
+
+	cmp Second_Player_Name[2],122
+	jg P2_NAME
+
+
+	ex:
 	endm
 	
 	Choose macro
