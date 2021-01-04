@@ -60,6 +60,10 @@
 	Lives_Word DB 'Lives : $'
 	
 	temp_var DB 0
+
+	invite db 00000000b
+
+	GInvite db 00
 	
 	Score_Num_char DB 10 dup('$')
 	
@@ -67,14 +71,25 @@
 	MSG2 DB 'Press Enter Key To Continue...', 10, 13, "$"
 	MSG3 DB 'Second Player Name:', 10, 13, "$"
 	GameLevel DB 'To Start Space War Game Press F2', '$'
+	ChatMsg                       DB  'To Start Chatting Press F3', '$'
 	First_Player_Name DB 50, ?, 50 DUP("$")
 	Second_Player_Name DB 50, ?, 50 DUP("$")
+
+	ChatInvite db  'You Sents Chat Invite. to ','$'
+	ChatRecvd db  ' Sents chat Invite.,F3 to accept','$'
+
+
+	GameInvite db  'You Sents Game Invite. to ','$'
+	GameRecvd db  ' Sents Game Invite.,F2 to accept','$'
+
+	pressed db 00h
+	pressedR db 00h
 	
 	; * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 	
 	.CODE
 	INCLUDE Play.INC
-	
+	INCLUDE Chat.INC
 	main proc far
 	mov ax, @data
 	mov ds, ax
@@ -84,7 +99,7 @@
 	int 10h
 	
 	Menu
-	Choose
+	ChoosingMenu: ChooseM
 	
 	call Play
 
