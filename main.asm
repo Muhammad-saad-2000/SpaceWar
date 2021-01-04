@@ -72,8 +72,8 @@
 	MSG3 DB 'Second Player Name:', 10, 13, "$"
 	GameLevel DB 'To Start Space War Game Press F2', '$'
 	ChatMsg                       DB  'To Start Chatting Press F3', '$'
-	First_Player_Name DB 50, ?, 50 DUP("$")
-	Second_Player_Name DB 50, ?, 50 DUP("$")
+	First_Player_Name DB 15, ?, 50 DUP("$")
+	Second_Player_Name DB 15, ?, 50 DUP("$")
 
 	ChatInvite db  'You Sents Chat Invite. to ','$'
 	ChatRecvd db  ' Sents chat Invite.,F3 to accept','$'
@@ -84,7 +84,9 @@
 
 	pressed db 00h
 	pressedR db 00h
-	
+	;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
+	send	db 30 dup('$')
+	resive 	db 30 dup('$')
 	; * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 	
 	.CODE
@@ -99,10 +101,9 @@
 	int 10h
 	
 	Menu
+	call Play
 	ChoosingMenu: ChooseM
 	
-	call Play
-
 	hlt
 	main endp
 	; * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
