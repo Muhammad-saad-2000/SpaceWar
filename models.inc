@@ -1,3 +1,23 @@
+drawRect proc
+mov ah,0ch
+mov al,2
+
+mov dx,90
+LoopRectY:
+	mov cx,80 
+	LoopRectX:
+		int 10h
+		inc cx
+		cmp cx,241
+		jz LoopRectY
+	jmp LoopRectX
+	inc dx
+	cmp dx,111
+jnz LoopRectY
+
+RET
+drawRect endp
+
 drawShip proc ;color: bl,positions: si->x,di->y,rotation: cl=1->0,cl=2->45,cl=3->90,cl=4->135,cl=5->180,cl=6->225,cl=7->270,cl=8->315
 cmp cl,0      
 jnz notAngel0

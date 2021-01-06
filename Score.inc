@@ -100,6 +100,50 @@ mess1:
 	mov al, [di]
 	cmp al, '$'
 	jnz mess1
+	;-----------------------------------------------------------
+	push ax
+	push bx
+	push cx
+	push dx
+	
+	mov ah, 02                   ;moves cursor to position (0, 0)
+	mov dl, 22
+	mov dh, 0
+	int 10h
+	mov di, offset send ;the name of p1 to apear next to score
+messFromMe:
+	xor bx, bx
+	mov al, [di]
+	cmp al, '$'
+	jz outMessFromMe
+	mov bl, 0ch                  ; Text in red color
+	mov ah, 14                   ;Prints chars in the graphica mode
+	inc di
+	int 10h	
+	jmp messFromMe
+outMessFromMe:
+
+	mov ah, 02                   ;moves cursor to position (0, 0)
+	mov dl, 22
+	mov dh, 24
+	int 10h
+	mov di, offset resive ;the name of p1 to apear next to score
+messFromOther:
+	xor bx, bx
+	mov al, [di]
+	cmp al, '$'
+	jz outMessFromOther
+	mov bl, 0ch                  ; Text in red color
+	mov ah, 14                   ;Prints chars in the graphica mode
+	inc di
+	int 10h	
+	jmp messFromOther
+outMessFromOther:
+
+	pop dx
+	pop cx
+	pop bx
+	pop ax
 	; * * * * * * * * * * * * * * * * * * * * * * 
 	mov di, offset Lives_Word    ; DI now carries the offset of Lives_Word
 	mov ah, 02                   ; moves the cursor to (00, 02)
@@ -146,7 +190,10 @@ mess2:
 	mov ax, Player1_Score        ;Prints P1 score
 	call Printnum
 	mov ah, 02
-	mov dl, 8
+	mov di, offset First_Player_Name
+	inc di
+	mov dl, [di]
+	inc dl
 	mov dh, 0
 	int 10h
 	mov di, offset Score_Num_char
@@ -185,7 +232,10 @@ Num2:
 	mov ax, Player2_Score        ;Prints P2 score
 	call Printnum
 	mov ah, 02
-	mov dl, 8
+	mov di, offset Second_Player_Name
+	inc di
+	mov dl, [di]
+	inc dl
 	mov dh, 24
 	int 10h
 	mov di, offset Score_Num_char

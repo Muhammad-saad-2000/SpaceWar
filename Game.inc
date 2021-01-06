@@ -9,6 +9,18 @@ IS_KEY_PRESSED:
 	MOV AH, 1
 	INT 16H
 	JZ TERMINATE                 ;No key presses to handle, return
+	cmp ah,FIRST_PLAYER_ROT_LEFT_BTN
+	jz NoTerminateGotKey
+	cmp ah,FIRST_PLAYER_ROT_RIGHT_BTN
+	jz NoTerminateGotKey
+	cmp ah,FIRST_PLAYER_INCR_THRUST_BTN
+	jz NoTerminateGotKey
+	cmp ah,FIRST_PLAYER_DECR_THRUST_BTN
+	jz NoTerminateGotKey
+	cmp ah,	FIRST_PLAYER_FIRE
+	jz NoTerminateGotKey
+	JMP TERMINATE
+	NoTerminateGotKey:
 	;Else, take a look at the pressed key
 	MOV AH, 0
 	INT 16H
