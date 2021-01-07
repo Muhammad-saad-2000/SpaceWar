@@ -84,6 +84,7 @@
 
 	pressed db 00h
 	pressedR db 00h
+	is_master db 00h
 	;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 	send	db 30 dup('$')
 	resive 	db 30 dup('$')
@@ -111,7 +112,6 @@
 
 	Menu
 	ChoosingMenu: ChooseM
-	call Play
 	
 	hlt
 	main endp
@@ -131,7 +131,8 @@
 		jz exitSendIngameCharacter
 		cmp ah,	FIRST_PLAYER_FIRE
 		jz exitSendIngameCharacter
-		
+		cmp al,27
+		jz ChoosingMenu
 		mov ah,0
 		int 16h
 
