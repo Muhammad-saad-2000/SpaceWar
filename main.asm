@@ -132,6 +132,8 @@
 		cmp ah,	FIRST_PLAYER_FIRE
 		jz exitSendIngameCharacter
 		cmp al,27
+		mov is_master,00
+		mov GInvite,00
 		jz ChoosingMenu
 		mov ah,0
 		int 16h
