@@ -278,6 +278,9 @@ Num4:
 	Check_Collision Proc
 	; Local No1, No2, Yes
 	
+	
+
+	
 	mov cx, first_player_X
 	sub cx, second_player_X      ;Sub P2_x from P1_x
 	cmp cx, 15                   ; checks if they lie within range of 15

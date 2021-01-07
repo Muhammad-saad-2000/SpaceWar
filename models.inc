@@ -1,7 +1,6 @@
 drawRect proc
 mov ah,0ch
-mov al,2
-
+mov al,7
 mov dx,90
 LoopRectY:
 	mov cx,80 
@@ -9,12 +8,11 @@ LoopRectY:
 		int 10h
 		inc cx
 		cmp cx,241
-		jz LoopRectY
+		jz a
 	jmp LoopRectX
-	inc dx
+	a:inc dx
 	cmp dx,111
 jnz LoopRectY
-
 RET
 drawRect endp
 

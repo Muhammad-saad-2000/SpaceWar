@@ -23,8 +23,9 @@ drawingLoop:
 	call TAKE_INPUT
 	call UPDATE_PLAYERS
     call Display
-jmp drawingLoop
 
+	
+jmp drawingLoop
 Play ENDP
 
 

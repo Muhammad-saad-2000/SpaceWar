@@ -397,6 +397,7 @@ ProcessInput MACRO Char, Player
     ;Accept invitation
     StartGame:
     MOV GInvite, 0
+	mov is_master,1
 	CALL PLAY
 
 fin:
