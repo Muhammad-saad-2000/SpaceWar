@@ -22,9 +22,7 @@ drawingLoop:
 	call resiveIngameCharacter
 	call TAKE_INPUT
 	call UPDATE_PLAYERS
-    call Display
-
-	
+    call Display	
 jmp drawingLoop
 Play ENDP
 
