@@ -284,12 +284,12 @@ ExchangeNames proc
 	mov cl,First_Player_Name[1]
 	xor ch,ch
 	lop:
-	SendChar First_Player_Name[bx+2]
+	SendChar First_Player_Name[bx+1]
 
 	XchangeNames:
 	ReceiveChar
 	JZ XchangeNames
-	MOV Second_Player_Name[BX+2],AL
+	MOV Second_Player_Name[BX+1],AL
 	inc bx
 	cmp bx,cx
 	jle lop
@@ -333,8 +333,8 @@ ProcessInput MACRO Char, Player
 	mov dx,1400h
 	mov ah,2
 	int 10h
-	ShowMSG First_Player_Name+2
-	mov dl,First_Player_Name+1
+	ShowMSG Second_Player_Name+2
+	mov dl,Second_Player_Name+1
 	mov dh,14h
 	mov ah,2
 	int 10h
@@ -382,8 +382,8 @@ ProcessInput MACRO Char, Player
 	mov dx,1600h
 	mov ah,2
 	int 10h
-	ShowMSG First_Player_Name+2
-	mov dl,First_Player_Name+1
+	ShowMSG Second_Player_Name+2
+	mov dl,Second_Player_Name+1
 	mov dh,16h
 	mov ah,2
 	int 10h
@@ -516,7 +516,7 @@ ChooseM macro
 	int 10h
 	ShowMSG ChatRecvd
 
-	GM:
+	 GM:
 	cmp GInvite,1
 	jne GameRecvS
 	mov dx,1500h
