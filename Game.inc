@@ -29,6 +29,7 @@ IS_KEY_PRESSED:
 	INT 16H
 	;And compare pressed key against known keys
 	;P1
+
 KEY1:
 	CMP AH, FIRST_PLAYER_ROT_LEFT_BTN
 	JNZ KEY2
@@ -139,6 +140,8 @@ TERMINATE: RET
 	;AL : first player X thrust component
 	;AH : first player Y thrust component
 
+	cmp Level2,02
+	jne BiCollision
    
 	;Checking Collision P1 with wall
 	;=============================================================================================================
@@ -325,6 +328,8 @@ BEGIN_P2X:
 	;P2
 	;BL : second player X thrust component
 	;BH : second player Y thrust component
+	cmp Level2,02
+	jne BiCollision_2
 
 	cmp second_player_direction,0
 	je Angle0_2
@@ -752,8 +757,11 @@ NoFireToDrawFireP2:
 	call drawScore
 	mov si, 1
 	call drawBackground          ;drawing the background
+	cmp Level2,02
+	jne L11
 	call drawRect
 	
+	L11:
 	mov si, first_player_X       ;position x choise p1
 	mov di, first_player_Y       ;position y choise p1
 	mov cl, first_player_direction ;rotation choice p1

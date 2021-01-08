@@ -82,9 +82,13 @@
 	GameInvite db  'You Sents Game Invite. to ','$'
 	GameRecvd db  ' Sents Game Invite.,F2 to accept','$'
 
+	Level1MSG db '- Press 1 to Enter Level 1 ','$'
+	Level2Msg db '- Press 2 to Enter Level 2 ','$'
+
 	pressed db 00h
 	pressedR db 00h
 	is_master db 00h
+	Level2 db '?'
 	;* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * 
 	send	db 30 dup('$')
 	resive 	db 30 dup('$')
@@ -132,6 +136,8 @@
 		cmp ah,	FIRST_PLAYER_FIRE
 		jz exitSendIngameCharacter
 		cmp al,27
+		mov is_master,00
+		mov GInvite,00
 		jz ChoosingMenu
 		mov ah,0
 		int 16h

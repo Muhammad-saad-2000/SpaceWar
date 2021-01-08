@@ -216,7 +216,7 @@ ENDD:
 	MOV DX, OFFSET INPUT
 	INT 21H
 	ENDM GetInput
-	
+
 	
 	Menu macro
 	
@@ -234,6 +234,7 @@ ENDD:
 	int 10h
 	ShowMSG msg
 	
+
 	
 	
 	mov ah, 2
@@ -244,31 +245,8 @@ ENDD:
 	mov dx, 0c80H
 	int 10h
 	GetInput First_Player_Name
+	call ExchangeNames
 	
-	
-	mov ax, 0600h
-	mov bh, 00
-	mov cx, 0
-	mov dx, 184FH
-	int 10h
-	
-	
-	
-	mov ah, 2
-	mov dx, 0A80H
-	int 10h
-	ShowMSG msg3
-	
-	
-	
-	mov ah, 2
-	mov dx, 1080H
-	int 10h
-	ShowMSG MSG2
-	mov ah, 2
-	mov dx, 0c80H
-	int 10h
-	GetInput Second_Player_Name
 	endm
 
 
@@ -299,6 +277,24 @@ ReceiveChar MACRO
 	RETURN:
 
 ENDM 
+
+
+ExchangeNames proc
+	MOV BX,0
+	mov cl,First_Player_Name[1]
+	xor ch,ch
+	lop:
+	SendChar First_Player_Name[bx+2]
+
+	XchangeNames:
+	ReceiveChar
+	JZ XchangeNames
+	MOV Second_Player_Name[BX+2],AL
+	inc bx
+	cmp bx,cx
+	jle lop
+	ret
+ExchangeNames endp
 
 ProcessInput MACRO Char, Player
     LOCAL CheckChat, StartChatting, GameChk, StartGame,ee,chatRecv,GameRecv,fin
@@ -392,17 +388,52 @@ ProcessInput MACRO Char, Player
 	mov ah,2
 	int 10h
 	ShowMSG GameRecvd
-	    RET
+	RET
     
     ;Accept invitation
     StartGame:
     MOV GInvite, 0
 	mov is_master,1
+	GetLevel
+	
 	CALL PLAY
-
 fin:
 	endm
 
+GetLevel macro
+LOCAL GetInp,ChkLevel2,ddd
+	;Clear Screen
+	mov ax, 0600h
+	mov bh, 00
+	mov cx, 0
+	mov dx, 184FH
+	int 10h
+	
+	mov ah, 2
+	mov dx, 0505h
+	int 10h
+	ShowMSG Level1MSG
+	
+	mov ah, 2
+	mov dx, 0705h
+	int 10h
+	ShowMSG Level2Msg
+	GetInp:
+	mov ah,1
+	int 16h
+	jz GetInp
+	mov ah,0
+	int 16H
+	cmp al,49
+	jne ChkLevel2
+	mov Level2,1
+	jmp ddd
+	ChkLevel2:
+	cmp al,50
+	jne GetInp
+	mov Level2,2
+	ddd:
+endm
 
 ChooseM macro
 
@@ -523,7 +554,7 @@ SENDER:
 	int 16h
 	mov Pressed, ah              ;mov char scancode to Pressed
 	SendChar Pressed
-	CALL ProcessPrimaryInput ;send pressed and player 1 to proces Input
+	CALL ProcessPrimaryInput  ;send pressed and player 1 to proces Input
 
 Receiver:
 	ReceiveChar
