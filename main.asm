@@ -64,23 +64,28 @@
 	invite db 00000000b
 
 	GInvite db 00
+	GInvite2 db 00
 	
 	Score_Num_char DB 10 dup('$')
 	
 	MSG DB 'First Player Name:', 10, 13, "$"
 	MSG2 DB 'Press Enter Key To Continue...', 10, 13, "$"
 	MSG3 DB 'Second Player Name:', 10, 13, "$"
-	GameLevel DB 'To Start Space War Game Press F2', '$'
-	ChatMsg                       DB  'To Start Chatting Press F3', '$'
+	GameLevel DB 'To Start Space War Game L1 Press F2', '$'
+	GameLevel2 DB 'To Start Space War Game L2 Press F3', '$'
+	ChatMsg                       DB  'To Start Chatting Press F4', '$'
 	First_Player_Name DB 50, ?, 50 DUP("$")
 	Second_Player_Name DB 50, ?, 50 DUP("$")
 
 	ChatInvite db  'You Sents Chat Invite. to ','$'
-	ChatRecvd db  ' Sents chat Invite.,F3 to accept','$'
+	ChatRecvd db  ' Sents chat Invite.,F4 to accept','$'
 
 
-	GameInvite db  'You Sents Game Invite. to ','$'
-	GameRecvd db  ' Sents Game Invite.,F2 to accept','$'
+	GameInvite db  'You Sents Game L1 Invite. to ','$'
+	GameRecvd db  ' Sents Game L1 Invite.,F2 to accept','$'
+
+	GameInvite2 db  'You Sents Game L2 Invite. to ','$'
+	GameRecvd2 db  ' Sents Game L2 Invite.,F3 to accept','$'
 
 	Level1MSG db '- Press 1 to Enter Level 1 ','$'
 	Level2Msg db '- Press 2 to Enter Level 2 ','$'
@@ -137,7 +142,6 @@
 		jz exitSendIngameCharacter
 		cmp al,27
 		mov is_master,00
-		mov GInvite,00
 		jz ChoosingMenu
 		mov ah,0
 		int 16h
