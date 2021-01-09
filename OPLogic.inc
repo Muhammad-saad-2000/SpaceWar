@@ -297,10 +297,10 @@ ExchangeNames proc
 ExchangeNames endp
 
 ProcessInput MACRO Char, Player
-    LOCAL CheckChat, StartChatting, GameChk, StartGame,ee,chatRecv,GameRecv,fin
-    ;Check if Chat (F3) is pressed
+    LOCAL CheckChat, StartChatting, GameChk, StartGame,ee,chatRecv,GameRecv,GameRecv2,gaming,getin,Lev2,StartGame2
+    ;Check if Chat (F4) is pressed
     CheckChat:
-    CMP Char, 3dH
+    CMP Char, 3EH
     JNE GameChk
     
 
@@ -316,12 +316,12 @@ ProcessInput MACRO Char, Player
 
 	cmp invite,1
 	jne chatRecv
-	mov dx,1300h
+	mov dx,1200h
 	mov ah,2
 	int 10h
 	ShowMSG ChatInvite
 	mov dl,26
-	mov dh,13h
+	mov dh,12h
 	mov ah,2
 	int 10h
 	ShowMSG Second_Player_Name+2
@@ -330,12 +330,12 @@ ProcessInput MACRO Char, Player
 	chatRecv:
 	cmp invite,2
 	jne ee
-	mov dx,1400h
+	mov dx,1300h
 	mov ah,2
 	int 10h
 	ShowMSG Second_Player_Name+2
 	mov dl,Second_Player_Name+1
-	mov dh,14h
+	mov dh,13h
 	mov ah,2
 	int 10h
 	ShowMSG ChatRecvd
@@ -345,13 +345,12 @@ ProcessInput MACRO Char, Player
     StartChatting:
     MOV invite, 0
     CALL chat
-	ee:
     RET
 
 	;Check if (F2) is pressed
 	GameChk:
 	CMP Char,3ch
-	jne ee
+	jne Lev2
 
 
 	MOV AL, GInvite
@@ -365,12 +364,12 @@ ProcessInput MACRO Char, Player
 	;Display Messages In Notification Bar
 	cmp GInvite,1
 	jne GameRecv
-	mov dx,1500h
+	mov dx,1400h
 	mov ah,2
 	int 10h
 	ShowMSG GameInvite
-	mov dl,26
-	mov dh,15h
+	mov dl,28
+	mov dh,14h
 	mov ah,2
 	int 10h
 	ShowMSG Second_Player_Name+2
@@ -379,61 +378,75 @@ ProcessInput MACRO Char, Player
 	GameRecv:
 	cmp GInvite,2
 	jne ee
-	mov dx,1600h
+	mov dx,1500h
 	mov ah,2
 	int 10h
 	ShowMSG Second_Player_Name+2
 	mov dl,Second_Player_Name+1
-	mov dh,16h
+	mov dh,15h
 	mov ah,2
 	int 10h
 	ShowMSG GameRecvd
 	RET
+
+Lev2:
+	CMP Char,3Dh
+	jne ee
+
+
+	MOV AL, GInvite2
+    OR  AL, Player
+    CMP AL, 3               ;Only equals 3 when the other player accept the invitation
+    JE StartGame2
     
+    ;Send invitation
+    MOV GInvite2, Player
+
+	;Display Messages In Notification Bar
+	cmp GInvite2,1
+	jne GameRecv2
+	mov dx,1600h
+	mov ah,2
+	int 10h
+	ShowMSG GameInvite2
+	mov dl,28
+	mov dh,16h
+	mov ah,2
+	int 10h
+	ShowMSG Second_Player_Name+2
+	jmp ee
+
+	GameRecv2:
+	cmp GInvite2,2
+	jne ee
+	mov dx,1700h
+	mov ah,2
+	int 10h
+	ShowMSG Second_Player_Name+2
+	mov dl,Second_Player_Name+1
+	mov dh,17h
+	mov ah,2
+	int 10h
+	ShowMSG GameRecvd2
+	RET
+
+
     ;Accept invitation
     StartGame:
     MOV GInvite, 0
 	mov is_master,1
-	GetLevel
-	
+	mov Level2,1
 	CALL PLAY
-fin:
+	jmp ee
+
+	StartGame2:
+    MOV GInvite2, 0
+	mov is_master,1
+	mov Level2,2
+	CALL PLAY
+ee:
 	endm
 
-GetLevel macro
-LOCAL GetInp,ChkLevel2,ddd
-	;Clear Screen
-	mov ax, 0600h
-	mov bh, 00
-	mov cx, 0
-	mov dx, 184FH
-	int 10h
-	
-	mov ah, 2
-	mov dx, 0505h
-	int 10h
-	ShowMSG Level1MSG
-	
-	mov ah, 2
-	mov dx, 0705h
-	int 10h
-	ShowMSG Level2Msg
-	GetInp:
-	mov ah,1
-	int 16h
-	jz GetInp
-	mov ah,0
-	int 16H
-	cmp al,49
-	jne ChkLevel2
-	mov Level2,1
-	jmp ddd
-	ChkLevel2:
-	cmp al,50
-	jne GetInp
-	mov Level2,2
-	ddd:
-endm
 
 ChooseM macro
 
@@ -448,14 +461,19 @@ ChooseM macro
 	mov dx, 0505h
 	int 10h
 	ShowMSG GameLevel
-	
+
 	mov ah, 2
 	mov dx, 0705h
+	int 10h
+	ShowMSG GameLevel2
+	
+	mov ah, 2
+	mov dx, 0905h
 	int 10h
 	ShowMSG ChatMsg
 	
 	mov ah, 2
-	mov dx, 1200h
+	mov dx, 1100h
 	int 10h
 	
 
@@ -492,12 +510,12 @@ ChooseM macro
 	;Display Previous Invitation if any
 	cmp invite,1
 	jne chatRecvS
-	mov dx,1300h
+	mov dx,1200h
 	mov ah,2
 	int 10h
 	ShowMSG ChatInvite
 	mov dl,26
-	mov dh,13h
+	mov dh,12h
 	mov ah,2
 	int 10h
 	ShowMSG Second_Player_Name+2
@@ -506,42 +524,69 @@ ChooseM macro
 	chatRecvS:
 	cmp invite,2
 	jne GM
-	mov dx,1400h
+	mov dx,1300h
 	mov ah,2
 	int 10h
 	ShowMSG First_Player_Name+2
 	mov dl,First_Player_Name+1
-	mov dh,14h
+	mov dh,13h
 	mov ah,2
 	int 10h
 	ShowMSG ChatRecvd
 
-	 GM:
+	GM:
 	cmp GInvite,1
 	jne GameRecvS
-	mov dx,1500h
+	mov dx,1400h
 	mov ah,2
 	int 10h
 	ShowMSG GameInvite
 	mov dl,26
+	mov dh,14h
+	mov ah,2
+	int 10h
+	ShowMSG Second_Player_Name+2
+	jmp GM2
+
+	GameRecvS:
+	cmp GInvite,2
+	jne SENDER
+	mov dx,1500h
+	mov ah,2
+	int 10h
+	ShowMSG First_Player_Name+2
+	mov dl,First_Player_Name+1
 	mov dh,15h
+	mov ah,2
+	int 10h
+	ShowMSG GameRecvd
+
+	GM2:
+	cmp GInvite2,1
+	jne GameRecvS2
+	mov dx,1600h
+	mov ah,2
+	int 10h
+	ShowMSG GameInvite2
+	mov dl,26
+	mov dh,16h
 	mov ah,2
 	int 10h
 	ShowMSG Second_Player_Name+2
 	jmp SENDER
 
-	GameRecvS:
-	cmp GInvite,2
+	GameRecvS2:
+	cmp GInvite2,2
 	jne SENDER
-	mov dx,1600h
+	mov dx,1700h
 	mov ah,2
 	int 10h
 	ShowMSG First_Player_Name+2
 	mov dl,First_Player_Name+1
-	mov dh,16h
+	mov dh,17h
 	mov ah,2
 	int 10h
-	ShowMSG GameRecvd
+	ShowMSG GameRecvd2
 	
 
 SENDER:
