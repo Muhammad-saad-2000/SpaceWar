@@ -752,7 +752,7 @@ NoFireToDrawFireP2:
 	RET
 	DarwFIRE_P2 endp
 	
-	Display PROC NEAR
+Display PROC NEAR
 
 	call drawScore
 	mov si, 1
@@ -768,14 +768,19 @@ NoFireToDrawFireP2:
 	mov bl, 0                    ;color choise
 	call drawShip                ;drawing the p1 ship
 	
+	call Fire1_Barriers_Collision
 	call DarwFIRE_P1
+	
+
 	mov si, second_player_X      ;position x choise p2
 	mov di, second_player_Y      ;position y choise p2
 	mov cl, second_player_direction ;rotation choice p2
 	mov bl, 1                    ;color choise
 	call drawShip                ;drawing the p2 ship
+	
+	call Fire2_Barriers_Collision
 	call DarwFIRE_P2
-
+	
 	mov cx, 0                    ;set speed of rendering
 	mov dx, 0a120h
 	mov ah, 86h
