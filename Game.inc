@@ -6,30 +6,14 @@ INCLUDE Score.inc
     TAKE_INPUT PROC NEAR         ;take the inputs from users
 	
 IS_KEY_PRESSED:
-	
-	
-
 	MOV AH, 1
 	INT 16H
 	JZ TERMINATE                 ;No key presses to handle, return
-	cmp ah,FIRST_PLAYER_ROT_LEFT_BTN
-	jz NoTerminateGotKey
-	cmp ah,FIRST_PLAYER_ROT_RIGHT_BTN
-	jz NoTerminateGotKey
-	cmp ah,FIRST_PLAYER_INCR_THRUST_BTN
-	jz NoTerminateGotKey
-	cmp ah,FIRST_PLAYER_DECR_THRUST_BTN
-	jz NoTerminateGotKey
-	cmp ah,	FIRST_PLAYER_FIRE
-	jz NoTerminateGotKey
-	JMP TERMINATE
-	NoTerminateGotKey:
 	;Else, take a look at the pressed key
 	MOV AH, 0
 	INT 16H
 	;And compare pressed key against known keys
 	;P1
-
 KEY1:
 	CMP AH, FIRST_PLAYER_ROT_LEFT_BTN
 	JNZ KEY2
@@ -79,8 +63,6 @@ foundEmptyFireP1:
 	mov ax, first_player_Y
 	MOV [bx + si], ax
 	JMP IS_KEY_PRESSED
-
-	
 	
 	;P2
 KEY5:
@@ -139,150 +121,6 @@ TERMINATE: RET
 	;P1
 	;AL : first player X thrust component
 	;AH : first player Y thrust component
-
-	cmp Level2,02
-	jne BiCollision
-   
-	;Checking Collision P1 with wall
-	;=============================================================================================================
- 	cmp first_player_direction,0
-	je Angle0
-
-	cmp first_player_direction,1
-	je Angle45
-
-	cmp first_player_direction,2
-	je Angle90
-
-	cmp first_player_direction,3
-	je Angle135
-
-	cmp first_player_direction,4
-	je Angle180
-
-	cmp first_player_direction,0FDH
-	je Angle225
-
-	cmp first_player_direction,0FEH
-	je Angle270
-
-	cmp first_player_direction,0FFH
-	je Angle315
-	jne BICollision
-
-
-	Angle0:
-	cmp first_player_y,75
-	jl BICollision
-	cmp first_player_Y,110
-	jg BICollision
-
-	cmp first_player_X,65
-	jl BICollision
-	cmp first_player_X,235
-	jg BICollision
-	
-	Angle0Y:
-	jmp BEGIN_P2X
-
-	Angle45:
-	cmp first_player_y,75
-	jl BICollision
-	cmp first_player_Y,110
-	jg BICollision
-	cmp first_player_X,65
-	jl BICollision
-	cmp first_player_X,240
-	jg BICollision
-	
-	Angle45Y:
-	jmp BEGIN_P2X
-
-	Angle90:
-	cmp first_player_y,75
-	jl BICollision
-	cmp first_player_Y,107
-	jg BICollision
-	cmp first_player_X,65
-	jl BICollision
-	cmp first_player_X,240
-	jg BICollision
-	
-	Angle90Y:
-	jmp BEGIN_P2X
-
-	Angle135:
-	cmp first_player_y,70
-	jl BICollision
-	cmp first_player_Y,107
-	jg BICollision
-	cmp first_player_X,60
-	jl BICollision
-	cmp first_player_X,235
-	jg BICollision
-	
-	Angle135Y:
-	jmp BEGIN_P2X
-
-	Angle180:
-	cmp first_player_y,70
-	jl BICollision
-	cmp first_player_Y,110
-	jg BICollision
-	cmp first_player_X,65
-	jl BICollision
-	cmp first_player_X,235
-	jg BICollision
-
-
-	
-	Angle180Y:
-	jmp BEGIN_P2X
-
-	Angle225:
-	cmp first_player_y,70
-	jl BICollision
-	cmp first_player_Y,107
-	jg BICollision
-	cmp first_player_X,60
-	jl BICollision
-	cmp first_player_X,235
-	jg BICollision
-	
-	Angle225Y:
-	jmp BEGIN_P2X
-
-	Angle270:
-	cmp first_player_y,75
-	jl BICollision
-	cmp first_player_Y,107
-	jg BICollision
-	cmp first_player_X,60
-	jl BICollision
-	cmp first_player_X,235
-	jg BICollision
-	
-	Angle270Y:
-	jmp BEGIN_P2X
-
-	
-	Angle315:
-	cmp first_player_y,75
-	jl BICollision
-	cmp first_player_Y,110
-	jg BICollision
-	cmp first_player_X,60
-	jl BICollision
-	cmp first_player_X,235
-	jg BICollision
-	
-	Angle315Y:
-	jmp BEGIN_P2X
-	;================================================================================================================================================
-	;End Checking Collision P1 with wall
-
-
-BiCollision:
 	MOV CL, AH
 	MOV AH, 0
 	CMP AX, 3
@@ -328,147 +166,6 @@ BEGIN_P2X:
 	;P2
 	;BL : second player X thrust component
 	;BH : second player Y thrust component
-	cmp Level2,02
-	jne BiCollision_2
-
-	cmp second_player_direction,0
-	je Angle0_2
-
-	cmp second_player_direction,1
-	je Angle45_2
-
-	cmp second_player_direction,2
-	je Angle90_2
-
-	cmp second_player_direction,3
-	je Angle135_2
-
-	cmp second_player_direction,4
-	je Angle180_2
-
-	cmp second_player_direction,0FDH
-	je Angle225_2
-
-	cmp second_player_direction,0FEH
-	je Angle270_2
-
-	cmp first_player_direction,0FFH
-	je Angle315_2
-	jne BiCollision_2
-
-
-	Angle0_2:
-	cmp second_player_y,75
-	jl BiCollision_2
-	cmp second_player_y,110
-	jg BiCollision_2
-
-	cmp second_player_x,65
-	jl BiCollision_2
-	cmp second_player_x,235
-	jg BiCollision_2
-	
-	Angle0_2Y:
-	jmp trr
-
-	Angle45_2:
-	cmp second_player_y,75
-	jl BiCollision_2
-	cmp second_player_y,110
-	jg BiCollision_2
-	cmp second_player_x,65
-	jl BiCollision_2
-	cmp second_player_x,240
-	jg BiCollision_2
-	
-	Angle45_2Y:
-	jmp trr
-
-	Angle90_2:
-	cmp second_player_y,75
-	jl BiCollision_2
-	cmp second_player_y,107
-	jg BiCollision_2
-	cmp second_player_x,65
-	jl BiCollision_2
-	cmp second_player_x,240
-	jg BiCollision_2
-	
-	Angle90_2Y:
-	jmp trr
-
-	Angle135_2:
-	cmp second_player_y,70
-	jl BiCollision_2
-	cmp second_player_y,107
-	jg BiCollision_2
-	cmp second_player_x,60
-	jl BiCollision_2
-	cmp second_player_x,235
-	jg BiCollision_2
-	
-	Angle135_2Y:
-	jmp trr
-
-	Angle180_2:
-	cmp second_player_y,70
-	jl BiCollision_2
-	cmp second_player_y,110
-	jg BiCollision_2
-	cmp second_player_x,65
-	jl BiCollision_2
-	cmp second_player_x,235
-	jg BiCollision_2
-
-
-	
-	Angle180_2Y:
-	jmp trr
-
-	Angle225_2:
-	cmp second_player_y,70
-	jl BiCollision_2
-	cmp second_player_y,107
-	jg BiCollision_2
-	cmp second_player_x,60
-	jl BiCollision_2
-	cmp second_player_x,235
-	jg BiCollision_2
-	
-	Angle225_2Y:
-	jmp trr
-
-	Angle270_2:
-	cmp second_player_y,75
-	jl BiCollision_2
-	cmp second_player_y,107
-	jg BiCollision_2
-	cmp second_player_x,60
-	jl BiCollision_2
-	cmp second_player_x,235
-	jg BiCollision_2
-	
-	Angle270_2Y:
-	jmp trr
-
-	
-	Angle315_2:
-	cmp second_player_y,75
-	jl BiCollision_2
-	cmp second_player_y,110
-	jg BiCollision_2
-	cmp second_player_x,60
-	jl BiCollision_2
-	cmp second_player_x,235
-	jg BiCollision_2
-	
-	Angle315_2Y:
-	jmp trr
-
-	;===========================================================================================
-	;End Checking Collison p2 with wall
-
-	BiCollision_2:
 	MOV CL, BH
 	MOV BH, 0
 	CMP BX, 3
@@ -516,7 +213,6 @@ OVER:
 	call Check_Fire_Damage_P1
 	call Check_Fire_Damage_P2
 	Game_Over
-	TRR:
 	RET
 	UPDATE_PLAYERS ENDP
 	
@@ -757,11 +453,8 @@ NoFireToDrawFireP2:
 	call drawScore
 	mov si, 1
 	call drawBackground          ;drawing the background
-	cmp Level2,02
-	jne L11
-	call drawRect
 	
-	L11:
+	
 	mov si, first_player_X       ;position x choise p1
 	mov di, first_player_Y       ;position y choise p1
 	mov cl, first_player_direction ;rotation choice p1
@@ -775,7 +468,8 @@ NoFireToDrawFireP2:
 	mov bl, 1                    ;color choise
 	call drawShip                ;drawing the p2 ship
 	call DarwFIRE_P2
-
+	
+	
 	mov cx, 0                    ;set speed of rendering
 	mov dx, 0a120h
 	mov ah, 86h
@@ -785,7 +479,7 @@ NoFireToDrawFireP2:
 	mov cx, 0
 	mov dx, 184fh
 	int 10h
-
+	
 	ret
 Display		ENDP
 

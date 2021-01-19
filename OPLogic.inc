@@ -216,11 +216,13 @@ ENDD:
 	MOV DX, OFFSET INPUT
 	INT 21H
 	ENDM GetInput
-
+	
 	
 	Menu macro
 	
 	
+	
+P1_NAME:
 	mov ax, 0600h
 	mov bh, 00
 	mov cx, 0
@@ -234,7 +236,6 @@ ENDD:
 	int 10h
 	ShowMSG msg
 	
-
 	
 	
 	mov ah, 2
@@ -245,212 +246,65 @@ ENDD:
 	mov dx, 0c80H
 	int 10h
 	GetInput First_Player_Name
-	call ExchangeNames
 	
+
+	cmp First_Player_Name [2],65
+	jl P1_NAME
+
+	cmp First_Player_Name [2],90
+	jle p2_name
+
+	cmp First_Player_Name[2],97
+	jl P1_NAME
+
+	cmp First_Player_Name[2],122
+	jg P1_NAME
+
+
+	
+	p2_name:
+	mov ax, 0600h
+	mov bh, 00
+	mov cx, 0
+	mov dx, 184FH
+	int 10h
+	
+	
+	
+	mov ah, 2
+	mov dx, 0A80H
+	int 10h
+	ShowMSG msg3
+	
+	
+	
+	mov ah, 2
+	mov dx, 1080H
+	int 10h
+	ShowMSG MSG2
+	mov ah, 2
+	mov dx, 0c80H
+	int 10h
+	GetInput Second_Player_Name
+
+	cmp Second_Player_Name [2],65
+	jl P2_NAME
+
+	cmp Second_Player_Name [2],90
+	jle ex
+
+	cmp Second_Player_Name[2],97
+	jl ex
+
+	cmp Second_Player_Name[2],122
+	jg P2_NAME
+
+
+	ex:
 	endm
-
-
-;Send character through serial port
-SendChar MACRO MyChar
-    LOCAL Send
-    Send:
-       mov         dx, 3fdh
-
-		in          al, dx
-		test        al, 00100000b
-		jz          Send 
-		mov         dx, 3f8h ;sending value
-		mov         al, MyChar
-		out         dx, al
-ENDM 
-
-;Receive a character from the serial port into AL
-ReceiveChar MACRO
-    LOCAL Return
-    MOV AL, 0
-     mov         dx , 3FDH              	; Line Status Register
-	in          al , dx
-	test        al , 1
-	JZ          RETURN
-	mov         dx , 03F8H
-	in          al , dx
-	RETURN:
-
-ENDM 
-
-
-ExchangeNames proc
-	MOV BX,0
-	mov cl,First_Player_Name[1]
-	xor ch,ch
-	lop:
-	SendChar First_Player_Name[bx+1]
-
-	XchangeNames:
-	ReceiveChar
-	JZ XchangeNames
-	MOV Second_Player_Name[BX+1],AL
-	inc bx
-	cmp bx,cx
-	jle lop
-	ret
-ExchangeNames endp
-
-ProcessInput MACRO Char, Player
-    LOCAL CheckChat, StartChatting, GameChk, StartGame,ee,chatRecv,GameRecv,GameRecv2,gaming,getin,Lev2,StartGame2
-    ;Check if Chat (F4) is pressed
-    CheckChat:
-    CMP Char, 3EH
-    JNE GameChk
-    
-
-    MOV AL, invite
-    OR  AL, Player
-    CMP AL, 3               ;Only equals 3 when the other player accept the invitation
-    JE StartChatting
-    
-    ;Send invitation
-    MOV invite, Player
-
-	;Display Messages In Notification Bar
-
-	cmp invite,1
-	jne chatRecv
-	mov dx,1200h
-	mov ah,2
-	int 10h
-	ShowMSG ChatInvite
-	mov dl,26
-	mov dh,12h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	jmp ee
-
-	chatRecv:
-	cmp invite,2
-	jne ee
-	mov dx,1300h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	mov dl,Second_Player_Name+1
-	mov dh,13h
-	mov ah,2
-	int 10h
-	ShowMSG ChatRecvd
-	RET
-    
-    ;Accept invitation
-    StartChatting:
-    MOV invite, 0
-    CALL chat
-    RET
-
-	;Check if (F2) is pressed
-	GameChk:
-	CMP Char,3ch
-	jne Lev2
-
-
-	MOV AL, GInvite
-    OR  AL, Player
-    CMP AL, 3               ;Only equals 3 when the other player accept the invitation
-    JE StartGame
-    
-    ;Send invitation
-    MOV GInvite, Player
-
-	;Display Messages In Notification Bar
-	cmp GInvite,1
-	jne GameRecv
-	mov dx,1400h
-	mov ah,2
-	int 10h
-	ShowMSG GameInvite
-	mov dl,28
-	mov dh,14h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	jmp ee
-
-	GameRecv:
-	cmp GInvite,2
-	jne ee
-	mov dx,1500h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	mov dl,Second_Player_Name+1
-	mov dh,15h
-	mov ah,2
-	int 10h
-	ShowMSG GameRecvd
-	RET
-
-Lev2:
-	CMP Char,3Dh
-	jne ee
-
-
-	MOV AL, GInvite2
-    OR  AL, Player
-    CMP AL, 3               ;Only equals 3 when the other player accept the invitation
-    JE StartGame2
-    
-    ;Send invitation
-    MOV GInvite2, Player
-
-	;Display Messages In Notification Bar
-	cmp GInvite2,1
-	jne GameRecv2
-	mov dx,1600h
-	mov ah,2
-	int 10h
-	ShowMSG GameInvite2
-	mov dl,28
-	mov dh,16h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	jmp ee
-
-	GameRecv2:
-	cmp GInvite2,2
-	jne ee
-	mov dx,1700h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	mov dl,Second_Player_Name+1
-	mov dh,17h
-	mov ah,2
-	int 10h
-	ShowMSG GameRecvd2
-	RET
-
-
-    ;Accept invitation
-    StartGame:
-    MOV GInvite, 0
-	mov is_master,1
-	mov Level2,1
-	CALL PLAY
-	jmp ee
-
-	StartGame2:
-    MOV GInvite2, 0
-	mov is_master,1
-	mov Level2,2
-	CALL PLAY
-ee:
-	endm
-
-
-ChooseM macro
-
-	;Clear Screen
+	
+	Choose macro
+	
 	mov ax, 0600h
 	mov bh, 00
 	mov cx, 0
@@ -461,165 +315,30 @@ ChooseM macro
 	mov dx, 0505h
 	int 10h
 	ShowMSG GameLevel
-
-	mov ah, 2
-	mov dx, 0705h
-	int 10h
-	ShowMSG GameLevel2
 	
 	mov ah, 2
-	mov dx, 0905h
-	int 10h
-	ShowMSG ChatMsg
-	
-	mov ah, 2
-	mov dx, 1100h
+	mov dx, 1200h
 	int 10h
 	
-
-	;Draw Notification Region
 	mov ah, 9
 	mov bh, 0
 	mov al, '_'
 	mov cx, 28h
 	mov bl, 0Fh
 	int 10h
-
-;============================================
-	;Port Initialization
-	
-	          mov         dx, 3fbh
-	          mov         al, 10000000b
-	          out         dx, al
-	
-	          mov         dx, 3f8h
-	          mov         al, 0ch
-	          out         dx, al
 	
 	
-	          mov         dx, 3f9h
-	          mov         al, 00h
-	          out         dx, al
+INP: mov ah, 1
+	int 16H
+	jz INP
 	
-	          mov         dx, 3fbh
-	          mov         al, 00011011b
-	          out         dx, al
+	mov ah, 0
+	int 16H
 	
-	;End of port Initialization
-
-	;Display Previous Invitation if any
-	cmp invite,1
-	jne chatRecvS
-	mov dx,1200h
-	mov ah,2
-	int 10h
-	ShowMSG ChatInvite
-	mov dl,26
-	mov dh,12h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	JMP GM
-
-	chatRecvS:
-	cmp invite,2
-	jne GM
-	mov dx,1300h
-	mov ah,2
-	int 10h
-	ShowMSG First_Player_Name+2
-	mov dl,First_Player_Name+1
-	mov dh,13h
-	mov ah,2
-	int 10h
-	ShowMSG ChatRecvd
-
-	GM:
-	cmp GInvite,1
-	jne GameRecvS
-	mov dx,1400h
-	mov ah,2
-	int 10h
-	ShowMSG GameInvite
-	mov dl,26
-	mov dh,14h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	jmp GM2
-
-	GameRecvS:
-	cmp GInvite,2
-	jne SENDER
-	mov dx,1500h
-	mov ah,2
-	int 10h
-	ShowMSG First_Player_Name+2
-	mov dl,First_Player_Name+1
-	mov dh,15h
-	mov ah,2
-	int 10h
-	ShowMSG GameRecvd
-
-	GM2:
-	cmp GInvite2,1
-	jne GameRecvS2
-	mov dx,1600h
-	mov ah,2
-	int 10h
-	ShowMSG GameInvite2
-	mov dl,26
-	mov dh,16h
-	mov ah,2
-	int 10h
-	ShowMSG Second_Player_Name+2
-	jmp SENDER
-
-	GameRecvS2:
-	cmp GInvite2,2
-	jne SENDER
-	mov dx,1700h
-	mov ah,2
-	int 10h
-	ShowMSG First_Player_Name+2
-	mov dl,First_Player_Name+1
-	mov dh,17h
-	mov ah,2
-	int 10h
-	ShowMSG GameRecvd2
+	cmp ah, 3cH
+	jne INP
+	je Restart
 	
-
-SENDER:
-
-	mov ah, 1                    ;check if there's an input
-	int 16h
-	jz Receiver           ;if No input, jmp to check if there's a char input in receive mode
-		
-	mov ah, 0                    ;read char from buffer
-	int 16h
-	mov Pressed, ah              ;mov char scancode to Pressed
-	SendChar Pressed
-	CALL ProcessPrimaryInput  ;send pressed and player 1 to proces Input
-
-Receiver:
-	ReceiveChar
-	JZ SENDER
-	MOV PressedR,AL
-	CALL ProcessSecondaryInput ;send pressed and player 2 to proces Input
-	JMP SENDER
-endm
-
-
-ProcessPrimaryInput PROC
-    ProcessInput Pressed, 1
-    RET
-ProcessPrimaryInput ENDP
-;===============================================================
-
-;Process secondary user input
-ProcessSecondaryInput PROC
-    ProcessInput PressedR, 2
-    RET
-ProcessSecondaryInput ENDP
-
-
+	
+	
+	endm
